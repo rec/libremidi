@@ -72,6 +72,12 @@ add_test(NAME midi_timing_test COMMAND midi_timing_test)
 add_test(NAME rawio_test COMMAND rawio_test)
 add_test(NAME observer_filters_test COMMAND observer_filters_test)
 
+if(LIBREMIDI_HAS_COREMIDI)
+  add_executable(coremidi_properties_test tests/unit/coremidi_properties.cpp)
+  target_link_libraries(coremidi_properties_test PRIVATE libremidi Catch2::Catch2WithMain)
+  add_test(NAME coremidi_properties_test COMMAND coremidi_properties_test)
+endif()
+
 # PipeWire shared-context regression tests. Standalone programs (no Catch2):
 # each skips with exit 0 when no daemon is reachable and arms a watchdog so a
 # lock-corruption regression fails instead of hanging.

@@ -67,6 +67,13 @@ public:
   auto to_port_info(MIDIObjectRef obj) const noexcept
       -> std::optional<std::conditional_t<Input, input_port, output_port>>
   {
+    const auto unique_id = get_int_property(obj, kMIDIPropertyUniqueID);
+    if (!unique_id)
+    {
+      libremidi_handle_error(configuration, "could not read CoreMIDI port unique ID");
+      return std::nullopt;
+    }
+
     MIDIEntityRef e{};
     MIDIEndpointGetEntity(obj, &e);
 
@@ -127,7 +134,7 @@ public:
          .client = (std::uintptr_t)this->client,
          .container = usb_location_id,
          .device = usb_vendor_product,
-         .port = std::bit_cast<uint32_t>(get_int_property(obj, kMIDIPropertyUniqueID)),
+         .port = std::bit_cast<uint32_t>(*unique_id),
          .manufacturer = get_string_property(obj, kMIDIPropertyManufacturer),
          .device_name = get_string_property(obj, kMIDIPropertyModel),
          .port_name = get_string_property(obj, kMIDIPropertyName),

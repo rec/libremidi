@@ -9,6 +9,7 @@
 #include <CoreServices/CoreServices.h>
 
 #include <cmath>
+#include <optional>
 
 #include <bit>
 
@@ -38,10 +39,12 @@ LIBREMIDI_STATIC std::string get_string_property(MIDIObjectRef object, CFStringR
   return name;
 }
 
-LIBREMIDI_STATIC int32_t get_int_property(MIDIObjectRef object, CFStringRef property) noexcept
+LIBREMIDI_STATIC std::optional<int32_t>
+get_int_property(MIDIObjectRef object, CFStringRef property) noexcept
 {
-  SInt32 res;
-  MIDIObjectGetIntegerProperty(object, property, &res);
+  SInt32 res{};
+  if (MIDIObjectGetIntegerProperty(object, property, &res) != noErr)
+    return std::nullopt;
   return res;
 }
 
