@@ -20,6 +20,10 @@ if(LIBREMIDI_CI)
     target_compile_definitions(libremidi ${_public} LIBREMIDI_CI)
 endif()
 
+add_executable(callback_lifetime_test tests/unit/callback_lifetime.cpp)
+target_link_libraries(callback_lifetime_test PRIVATE libremidi Catch2::Catch2WithMain)
+add_test(NAME callback_lifetime_test COMMAND callback_lifetime_test)
+
 add_executable(conversion_test tests/unit/conversion.cpp)
 target_link_libraries(conversion_test PRIVATE libremidi Catch2::Catch2WithMain)
 
