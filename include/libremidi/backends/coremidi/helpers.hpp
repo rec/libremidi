@@ -29,14 +29,21 @@ using CFStringMutable_handle = unique_handle<__CFString, CFRelease>;
 
 LIBREMIDI_STATIC std::string get_string_property(MIDIObjectRef object, CFStringRef property) noexcept
 {
-  CFStringRef res;
+  CFStringRef res{};
   if (MIDIObjectGetStringProperty(object, property, &res) || !res)
     return {};
 
-  char name[256];
-  CFStringGetCString(res, name, sizeof(name), kCFStringEncodingUTF8);
-  CFRelease(res);
-  return name;
+  const CFString_handle string{res};
+  const unique_handle<const __CFData, CFRelease> utf8{
+      CFStringCreateExternalRepresentation(nullptr, string.get(), kCFStringEncodingUTF8, 0)};
+  if (!utf8)
+    return {};
+
+  const auto size = CFDataGetLength(utf8.get());
+  if (size == 0)
+    return {};
+  return {reinterpret_cast<const char*>(CFDataGetBytePtr(utf8.get())),
+          static_cast<std::size_t>(size)};
 }
 
 LIBREMIDI_STATIC std::optional<int32_t>
