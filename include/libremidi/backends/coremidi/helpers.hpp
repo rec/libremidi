@@ -341,13 +341,15 @@ struct coremidi_data
   {
     if (this->endpoint)
     {
-      MIDIEndpointDispose(this->endpoint);
+      if (auto status = MIDIEndpointDispose(this->endpoint); status != noErr)
+        return from_osstatus(status);
       this->endpoint = 0;
     }
 
     if (this->port)
     {
-      MIDIPortDispose(this->port);
+      if (auto status = MIDIPortDispose(this->port); status != noErr)
+        return from_osstatus(status);
       this->port = 0;
     }
 
