@@ -24,19 +24,25 @@
 
 NAMESPACE_LIBREMIDI
 {
+using CFData_handle = unique_handle<const __CFData, CFRelease>;
 using CFString_handle = unique_handle<const __CFString, CFRelease>;
 using CFStringMutable_handle = unique_handle<__CFString, CFRelease>;
 
 LIBREMIDI_STATIC std::string get_string_property(MIDIObjectRef object, CFStringRef property) noexcept
 {
+  std::string result;
   CFStringRef res;
-  if (MIDIObjectGetStringProperty(object, property, &res) || !res)
-    return {};
-
-  char name[256];
-  CFStringGetCString(res, name, sizeof(name), kCFStringEncodingUTF8);
-  CFRelease(res);
-  return name;
+  if (!MIDIObjectGetStringProperty(object, property, &res) && res) {
+    const CFString_handle string{res};
+    const auto r = CFStringCreateExternalRepresentation(nullptr, string.get(), kCFStringEncodingUTF8, 0);
+    if (const CFData_handle utf8{r}) {
+      if (const std::size_t size = CFDataGetLength(utf8.get())) {
+        const auto ptr = reinterpret_cast<const char*>(CFDataGetBytePtr(utf8.get()));
+        result.assign(ptr, size);
+      }
+    }
+  }
+  return result;
 }
 
 LIBREMIDI_STATIC std::optional<int32_t>
