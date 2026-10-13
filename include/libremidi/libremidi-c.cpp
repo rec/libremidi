@@ -419,8 +419,9 @@ int libremidi_midi_in_free(libremidi_midi_in_handle* ptr)
   try
   {
     const auto api = ptr->self.get_current_api();
-    if (ptr->self.is_port_open() || api == libremidi::API::COREMIDI
-        || api == libremidi::API::COREMIDI_UMP)
+    // Other backends have their own destructor contracts; do not add a second
+    // explicit close without qualifying them (some closes are not idempotent).
+    if (api == libremidi::API::COREMIDI || api == libremidi::API::COREMIDI_UMP)
     {
       if (ptr->self.close_port() != stdx::error{})
         return -EIO;
